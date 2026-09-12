@@ -25,7 +25,7 @@
 
 *{box-sizing:border-box;}
 html{height:100%;}
-html,body{ overflow-x:hidden; overscroll-behavior:none; }
+html,body{ overflow-x:hidden; overscroll-behavior-y:contain; }
 body{
   margin:0;
   min-height:100vh;
@@ -194,8 +194,28 @@ body::before{
 }
 
 /* ---------- INSTRUCTIONS SCREEN ---------- */
+.instructions-scrollbox{
+  max-height:38vh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid rgba(184,147,90,0.35);
+  border-radius:5px;
+  padding:14px 16px;
+  margin-bottom:10px;
+  background:rgba(255,255,255,0.25);
+}
+.instructions-scroll-hint{
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+  color:var(--maroon);
+  margin-bottom:16px;
+  animation:hintPulse 1.4s ease-in-out infinite;
+}
+.instructions-scroll-hint.hide{ display:none; }
+@keyframes hintPulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
 .instructions-list{
-  margin:0 0 22px;
+  margin:0;
   padding-left:20px;
   color:var(--ink);
   font-size:14.5px;
@@ -1018,15 +1038,18 @@ window.addEventListener('DOMContentLoaded', function(){
       <p class="title-sub">Please read carefully before you begin</p>
       <div class="divider"></div>
 
-      <ol class="instructions-list">
-        <li>This test has <strong>132 questions</strong> and a time limit of <strong>88 minutes</strong>. The timer starts as soon as you tap "Begin Examination".</li>
-        <li>Tap an option to select your answer. Use <strong>Save &amp; Next</strong> to move ahead, <strong>Clear Response</strong> to remove your answer, and <strong>Mark for Review</strong> to flag a question and come back to it later.</li>
-        <li>Tap the round icon in the top-right corner anytime to see how many questions you've answered, skipped, or marked — and to jump directly to any question. The <strong>Submit</strong> button is also inside this panel.</li>
-        <li>Do <strong>not</strong> refresh the page, close the tab, or switch to another app during the test. Doing this is tracked, and switching away 3 times will <strong>automatically submit</strong> your test.</li>
-        <li>Only <strong>one tab</strong> can run this test at a time on your device.</li>
-        <li>You can attempt this test <strong>only once</strong> on this device. Once submitted, reopening this page will show only your result and review — not a fresh test.</li>
-        <li>After submitting, you'll see your score along with a full answer review and explanations. Please take a screenshot of your result and share it in the group.</li>
-      </ol>
+      <div class="instructions-scrollbox" id="instructionsScrollBox">
+        <ol class="instructions-list">
+          <li>This test has <strong>132 questions</strong> and a time limit of <strong>88 minutes</strong>. The timer starts as soon as you tap "Begin Examination".</li>
+          <li>Tap an option to select your answer. Use <strong>Save &amp; Next</strong> to move ahead, <strong>Clear Response</strong> to remove your answer, and <strong>Mark for Review</strong> to flag a question and come back to it later.</li>
+          <li>Tap the round icon in the top-right corner anytime to see how many questions you've answered, skipped, or marked — and to jump directly to any question. The <strong>Submit</strong> button is also inside this panel.</li>
+          <li>Do <strong>not</strong> refresh the page, close the tab, or switch to another app during the test. Doing this is tracked, and switching away 3 times will <strong>automatically submit</strong> your test.</li>
+          <li>Only <strong>one tab</strong> can run this test at a time on your device.</li>
+          <li>You can attempt this test <strong>only once</strong> on this device. Once submitted, reopening this page will show only your result and review — not a fresh test.</li>
+          <li>After submitting, you'll see your score along with a full answer review and explanations. Please take a screenshot of your result and share it in the group.</li>
+        </ol>
+      </div>
+      <div class="instructions-scroll-hint" id="instructionsScrollHint">▼ Scroll for more &amp; the checkbox/Next button</div>
 
       <label class="instructions-check">
         <input type="checkbox" id="instructionsCheckbox">
@@ -1594,6 +1617,18 @@ let paletteMode = 'exam';
 /* ---------- instructions screen ---------- */
 const instructionsCheckbox = document.getElementById('instructionsCheckbox');
 const instructionsNextBtn = document.getElementById('instructionsNextBtn');
+const instructionsScrollBox = document.getElementById('instructionsScrollBox');
+const instructionsScrollHint = document.getElementById('instructionsScrollHint');
+if(instructionsScrollBox && instructionsScrollHint){
+  function checkInstructionsScroll(){
+    const atBottom = instructionsScrollBox.scrollTop + instructionsScrollBox.clientHeight >= instructionsScrollBox.scrollHeight - 4;
+    const needsScroll = instructionsScrollBox.scrollHeight > instructionsScrollBox.clientHeight + 4;
+    instructionsScrollHint.classList.toggle('hide', !needsScroll || atBottom);
+  }
+  instructionsScrollBox.addEventListener('scroll', checkInstructionsScroll);
+  window.addEventListener('resize', checkInstructionsScroll);
+  setTimeout(checkInstructionsScroll, 100);
+}
 instructionsCheckbox.addEventListener('change', () => {
   instructionsNextBtn.disabled = !instructionsCheckbox.checked;
 });
