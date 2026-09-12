@@ -389,6 +389,21 @@ body::before{
   gap:12px;
   margin-bottom:12px;
 }
+.q-scrollbox{
+  max-height:42vh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding-right:4px;
+}
+.q-scroll-hint{
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+  color:var(--maroon);
+  margin-top:8px;
+  animation:hintPulse 1.4s ease-in-out infinite;
+}
+.q-scroll-hint.hide{ display:none; }
 .q-index-badge{
   font-family:Arial, Helvetica, sans-serif;
   font-size:11px;
@@ -479,8 +494,10 @@ body::before{
   justify-content:space-between;
   align-items:center;
   margin-top:14px;
+  padding:12px 0 2px;
   flex-wrap:wrap;
   gap:10px;
+  border-top:1.5px solid var(--brass);
 }
 .q-actions-left{ display:flex; gap:10px; }
 .btn-ghost{
@@ -1116,13 +1133,16 @@ window.addEventListener('DOMContentLoaded', function(){
     </div>
 
     <div class="q-card">
-      <div class="q-index-row">
-        <span class="q-index-badge" id="qIndexBadge">QUESTION 1 OF 10</span>
-        <span class="q-marked-tag" id="qMarkedTag">MARKED FOR REVIEW</span>
+      <div class="q-scrollbox" id="qScrollBox">
+        <div class="q-index-row">
+          <span class="q-index-badge" id="qIndexBadge">QUESTION 1 OF 10</span>
+          <span class="q-marked-tag" id="qMarkedTag">MARKED FOR REVIEW</span>
+        </div>
+        <div class="q-diagram" id="qDiagram" style="display:none;"></div>
+        <div class="q-text" id="qText">Question text goes here</div>
+        <div class="options" id="optionsWrap"></div>
       </div>
-      <div class="q-diagram" id="qDiagram" style="display:none;"></div>
-      <div class="q-text" id="qText">Question text goes here</div>
-      <div class="options" id="optionsWrap"></div>
+      <div class="q-scroll-hint" id="qScrollHint">▼ Scroll for full question / options</div>
 
       <div class="q-actions">
         <div class="q-actions-left">
@@ -1185,7 +1205,7 @@ window.addEventListener('DOMContentLoaded', function(){
       <div class="legend-item"><span class="legend-swatch" style="background:var(--maroon);border-radius:50%;width:10px;height:10px;"></span>Marked for review</div>
     </div>
 
-    <button class="btn btn-submit" id="paletteSubmitBtn" style="width:100%; margin-top:22px;">Submit Examination</button>
+    <button class="btn btn-submit" id="paletteSubmitBtn" style="width:100%; margin-top:22px; position:sticky; bottom:0;">Submit Examination</button>
   </div>
 </div>
 
@@ -1569,6 +1589,9 @@ const qMarkedTag = document.getElementById('qMarkedTag');
 const qText = document.getElementById('qText');
 const qDiagram = document.getElementById('qDiagram');
 const optionsWrap = document.getElementById('optionsWrap');
+const qScrollBox = document.getElementById('qScrollBox');
+const qScrollHint = document.getElementById('qScrollHint');
+if(qScrollBox) qScrollBox.addEventListener('scroll', () => updateQScrollHint());
 const clearBtn = document.getElementById('clearBtn');
 const markBtn = document.getElementById('markBtn');
 const prevBtn = document.getElementById('prevBtn');
@@ -1738,6 +1761,18 @@ function renderQuestion(){
 
   updateSectionTabs();
   updateSeal();
+
+  if(qScrollBox){
+    qScrollBox.scrollTop = 0;
+    setTimeout(updateQScrollHint, 50);
+  }
+}
+
+function updateQScrollHint(){
+  if(!qScrollBox || !qScrollHint) return;
+  const needsScroll = qScrollBox.scrollHeight > qScrollBox.clientHeight + 4;
+  const atBottom = qScrollBox.scrollTop + qScrollBox.clientHeight >= qScrollBox.scrollHeight - 4;
+  qScrollHint.classList.toggle('hide', !needsScroll || atBottom);
 }
 
 /* ---------- GK / English section tabs ---------- */
